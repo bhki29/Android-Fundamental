@@ -2,7 +2,6 @@ package com.dicoding.dicodingevent.data.remote.retrofit
 
 import com.dicoding.dicodingevent.data.remote.response.EventDetailResponse
 import com.dicoding.dicodingevent.data.remote.response.EventResponse
-import retrofit2.Call
 import retrofit2.http.GET
 import retrofit2.http.Path
 import retrofit2.http.Query
@@ -10,19 +9,19 @@ import retrofit2.http.Query
 interface ApiService {
 
     @GET("events?active=1")
-    fun getEventUpcoming(): Call<EventResponse>
+    suspend fun getEventUpcoming(): EventResponse
 
     @GET("events?active=0")
-    fun getEventFinished():  Call<EventResponse>
+    suspend fun getEventFinished(): EventResponse
 
     @GET("events/{id}")
-    fun getEventDetail(
+    suspend fun getEventDetail(
         @Path("id") id: Int
-    ):  Call<EventDetailResponse>
+    ):  EventDetailResponse
 
     @GET("events?active=-1")
-    fun getEventSearch(
+    suspend fun getEventSearch(
         @Query("q") keyword: String
-    ): Call<EventResponse>
+    ): EventResponse
 
 }
