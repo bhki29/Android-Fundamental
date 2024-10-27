@@ -8,16 +8,21 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.dicoding.dicodingevent.data.remote.response.ListEventsItem
+import com.dicoding.dicodingevent.data.local.entity.EventEntity
 import com.dicoding.dicodingevent.databinding.FragmentUpcomingBinding
 import com.dicoding.dicodingevent.ui.adapter.EventUpcomingAdapter
 import com.dicoding.dicodingevent.ui.detail.DetailActivity
+import kotlinx.coroutines.launch
 
 class UpcomingFragment : Fragment() {
 
     private var _binding: FragmentUpcomingBinding? = null
-    private val upcomingViewModel by viewModels<UpcomingViewModel>()
+
+    private val upcomingViewModel by viewModels<UpcomingViewModel>{
+        UpcomingModelFactory.getInstance(requireActivity())
+    }
 
     private val binding get() = _binding!!
 
@@ -27,14 +32,18 @@ class UpcomingFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
 
+
         _binding = FragmentUpcomingBinding.inflate(inflater, container, false)
         val root: View = binding.root
 
-        val layoutManager = LinearLayoutManager(requireActivity())
-        binding.rvEvent.layoutManager = layoutManager
+        binding.rvEvent.apply {
+            layoutManager = LinearLayoutManager(requireActivity())
+            setHasFixedSize(true)
+        }
+
 
         upcomingViewModel.listEvent.observe(viewLifecycleOwner) { eventList ->
-            setEventData(eventList)
+            setEventDataUpcoming(eventList)
         }
 
         upcomingViewModel.errorMessage.observe(viewLifecycleOwner) {
@@ -43,21 +52,43 @@ class UpcomingFragment : Fragment() {
             }
         }
 
-        upcomingViewModel.isLoading.observe(viewLifecycleOwner) { loading ->
-            showLoading(loading)
+        upcomingViewModel.isLoading.observe(viewLifecycleOwner) { isLoading ->
+            showLoading(isLoading)
         }
 
         return root
     }
 
-    private fun setEventData(listEvent: List<ListEventsItem>) {
-        val adapter = EventUpcomingAdapter(onItemClick = { eventId -> navigateToDetail(eventId)})
+
+    private fun setEventDataUpcoming(listEvent: List<EventEntity>) {
+        val adapter = EventUpcomingAdapter(
+            onItemClick = { eventId -> navigateToDetail(eventId)},
+            onFavoriteClick = { event ->
+                viewLifecycleOwner.lifecycleScope.launch {
+                    toggleFavorite(event)
+                }
+            }
+        )
+
         adapter.submitList(listEvent)
         binding.rvEvent.adapter = adapter
     }
 
     private fun showLoading(isLoading: Boolean) {
         binding.progressBar.visibility = if (isLoading) View.VISIBLE else View.GONE
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
+    }
+
+    private suspend fun toggleFavorite(event: EventEntity) {
+        if (event.isFavorite) {
+            upcomingViewModel.deleteEvent(event)
+        } else {
+            upcomingViewModel.saveEvent(event)
+        }
     }
 
     private fun navigateToDetail(eventId: Int) {
@@ -67,8 +98,4 @@ class UpcomingFragment : Fragment() {
         startActivity(intent)
     }
 
-    override fun onDestroyView() {
-        super.onDestroyView()
-        _binding = null
-    }
 }

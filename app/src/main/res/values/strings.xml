@@ -18,4 +18,5 @@
     <string name="finished_event">event finished</string>
     <string name="searchbar_hint">search bar</string>
     <string name="dark_mode">dark mode</string>
+    <string name="daily_reminder">daily reminder</string>
 </resources>

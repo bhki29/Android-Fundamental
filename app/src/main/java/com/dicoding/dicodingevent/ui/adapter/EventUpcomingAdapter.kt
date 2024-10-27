@@ -1,22 +1,26 @@
 package com.dicoding.dicodingevent.ui.adapter
 
+import android.annotation.SuppressLint
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import android.widget.ImageView
+import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
-import com.dicoding.dicodingevent.data.remote.response.ListEventsItem
+import com.dicoding.dicodingevent.R
+import com.dicoding.dicodingevent.data.local.entity.EventEntity
 import com.dicoding.dicodingevent.databinding.ItemEventUpcomingBinding
 
-class EventUpcomingAdapter(private val onItemClick: (Int) -> Unit) : ListAdapter<ListEventsItem, EventUpcomingAdapter.MyViewHolder>(DIFF_CALLBACK) {
-
+class EventUpcomingAdapter(private val onItemClick: (Int) -> Unit, private val onFavoriteClick: (EventEntity) -> Unit) : ListAdapter<EventEntity, EventUpcomingAdapter.MyViewHolder>(DIFF_CALLBACK) {
     class MyViewHolder(private val binding: ItemEventUpcomingBinding, private val onItemClick: (Int) -> Unit) : RecyclerView.ViewHolder(binding.root) {
-        fun bind(event: ListEventsItem){
+        @SuppressLint("SetTextI18n")
+        fun bind(event: EventEntity){
             Glide.with(binding.root.context)
-                .load(event.imageLogo)
+                .load(event.mediaCover)
                 .into(binding.imgEvent)
-            binding.tvEvent.text = event.name
+            binding.tvEvent.text = event.title
             itemView.setOnClickListener {
                 onItemClick(event.id)
             }
@@ -31,14 +35,27 @@ class EventUpcomingAdapter(private val onItemClick: (Int) -> Unit) : ListAdapter
     override fun onBindViewHolder(holder: MyViewHolder, position: Int) {
         val event = getItem(position)
         holder.bind(event)
+        val ivFav = holder.itemView.findViewById<ImageView>(R.id.iv_fav)
+
+        if (event.isFavorite) {
+            ivFav.setImageDrawable(ContextCompat.getDrawable(ivFav.context, R.drawable.baseline_favorite_24))
+        } else {
+            ivFav.setImageDrawable(ContextCompat.getDrawable(ivFav.context, R.drawable.baseline_favorite_border_24))
+        }
+
+        ivFav.setOnClickListener {
+            onFavoriteClick(event)
+        }
     }
 
+
     companion object {
-        val DIFF_CALLBACK = object : DiffUtil.ItemCallback<ListEventsItem>() {
-            override fun areItemsTheSame(oldItem: ListEventsItem, newItem: ListEventsItem): Boolean {
+        val DIFF_CALLBACK = object : DiffUtil.ItemCallback<EventEntity>() {
+            override fun areItemsTheSame(oldItem: EventEntity, newItem: EventEntity): Boolean {
                 return oldItem == newItem
             }
-            override fun areContentsTheSame(oldItem: ListEventsItem, newItem: ListEventsItem): Boolean {
+            @SuppressLint("DiffUtilEquals")
+            override fun areContentsTheSame(oldItem: EventEntity, newItem: EventEntity): Boolean {
                 return oldItem == newItem
             }
         }

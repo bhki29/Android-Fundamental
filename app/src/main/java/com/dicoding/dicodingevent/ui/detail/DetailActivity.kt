@@ -10,7 +10,7 @@ import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.text.HtmlCompat
 import com.bumptech.glide.Glide
-import com.dicoding.dicodingevent.data.remote.response.Event
+import com.dicoding.dicodingevent.data.remote.response.EventDetailResponse
 import com.dicoding.dicodingevent.databinding.ActivityDetailBinding
 
 class DetailActivity : AppCompatActivity() {
@@ -18,8 +18,9 @@ class DetailActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityDetailBinding
 
-    private val detailViewModel by viewModels<DetailViewModel>()
-
+    private val detailViewModel by viewModels<DetailViewModel> {
+        DetailModelFactory.getInstance(this)
+    }
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -52,7 +53,9 @@ class DetailActivity : AppCompatActivity() {
     }
 
     @SuppressLint("SetTextI18n")
-    private fun setEventData(event: Event) {
+    private fun setEventData(eventDetail: EventDetailResponse) {
+
+        val event = eventDetail.event
 
         supportActionBar?.title = event.name
 
@@ -80,16 +83,22 @@ class DetailActivity : AppCompatActivity() {
     }
 
     private fun showLoading(isLoading: Boolean) {
-        binding.progressBar.visibility = if (isLoading) View.VISIBLE else View.GONE
+
+        if (isLoading) {
+            binding.progressBar.visibility = View.VISIBLE
+            binding.btnRegister.visibility = View.GONE
+            binding.cardCategory.visibility = View.GONE
+        } else {
+            binding.progressBar.visibility = View.GONE
+            binding.btnRegister.visibility = View.VISIBLE
+            binding.cardCategory.visibility = View.VISIBLE
+        }
+
     }
 
     override fun onSupportNavigateUp(): Boolean {
         onBackPressed()
         return true
-    }
-
-    override fun onBackPressed() {
-        super.onBackPressed()
     }
 
 }

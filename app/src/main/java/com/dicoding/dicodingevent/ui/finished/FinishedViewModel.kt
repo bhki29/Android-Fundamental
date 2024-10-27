@@ -1,20 +1,22 @@
 package com.dicoding.dicodingevent.ui.finished
 
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import com.dicoding.dicodingevent.data.remote.response.EventResponse
-import com.dicoding.dicodingevent.data.remote.response.ListEventsItem
-import com.dicoding.dicodingevent.data.remote.retrofit.ApiConfig
+import com.dicoding.dicodingevent.data.EventRepository
+import com.dicoding.dicodingevent.data.Result
+import com.dicoding.dicodingevent.data.local.entity.EventEntity
 import com.dicoding.dicodingevent.util.EventWrapper
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
 
-class FinishedViewModel : ViewModel() {
+class FinishedViewModel(private val eventRepository: EventRepository) : ViewModel() {
 
-    private val _listEvent = MutableLiveData<List<ListEventsItem>>()
-    val listEvent: LiveData<List<ListEventsItem>> = _listEvent
+    companion object {
+        private const val TAG = "UpcomingViewModel"
+    }
+
+    private val _listEvent = MutableLiveData<List<EventEntity>>()
+    val listEvent: LiveData<List<EventEntity>> = _listEvent
 
     private val _isLoading = MutableLiveData<Boolean>()
     val isLoading: LiveData<Boolean> = _isLoading
@@ -23,29 +25,36 @@ class FinishedViewModel : ViewModel() {
     val errorMessage: LiveData<EventWrapper<String>> = _errorMessage
 
     init {
-        findFinishedComing()
+        fetchFinishedEvent()
     }
 
-    private fun findFinishedComing() {
+
+    private fun fetchFinishedEvent() {
         _isLoading.value = true
-        val client = ApiConfig.getApiService().getEventFinished()
-        client.enqueue(object : Callback<EventResponse> {
-            override fun onResponse(
-                call: Call<EventResponse>,
-                response: Response<EventResponse>
-            ) {
-                val responseBody = response.body()
-                _isLoading.value = false
-                if (response.isSuccessful) {
-                    _listEvent.value = responseBody?.listEvents
-                } else {
-                    _errorMessage.value = EventWrapper(response.body()?.message.toString())
+
+        eventRepository.fetchFinishedEvents().observeForever { result ->
+            when (result) {
+                is Result.Loading -> _isLoading.value = true
+                is Result.Success -> {
+                    _isLoading.value = false
+                    _listEvent.value = result.data
+                }
+
+                is Result.Error -> {
+                    _isLoading.value = false
+                    Log.e(TAG, "Error: ${result.error}")
+                    _errorMessage.value = EventWrapper("Error : ${result.error}")
                 }
             }
-            override fun onFailure(call: Call<EventResponse>, t: Throwable) {
-                _isLoading.value = false
-                _errorMessage.value = EventWrapper("Network Error : ${t.message.toString()}")
-            }
-        })
+        }
     }
+
+    suspend fun saveEvent(event: EventEntity) {
+        eventRepository.setEventFavorite(event, true)
+    }
+
+    suspend fun deleteEvent(event: EventEntity) {
+        eventRepository.setEventFavorite(event, false)
+    }
+
 }

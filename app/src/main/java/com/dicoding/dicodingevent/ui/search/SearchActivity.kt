@@ -11,19 +11,22 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.dicoding.dicodingevent.data.remote.response.ListEventsItem
 import com.dicoding.dicodingevent.databinding.ActivitySearchBinding
-import com.dicoding.dicodingevent.ui.adapter.EventUpcomingAdapter
+import com.dicoding.dicodingevent.ui.adapter.EventSearchAdapter
 import com.dicoding.dicodingevent.ui.detail.DetailActivity
 
 class SearchActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivitySearchBinding
 
-    private val searchViewModel by viewModels<SearchViewModel>()
+    private val searchViewModel by viewModels<SearchViewModel>{
+        SearchModelFactory.getInstance(this)
+    }
 
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
         supportActionBar?.hide()
 
         binding = ActivitySearchBinding.inflate(layoutInflater)
@@ -42,7 +45,7 @@ class SearchActivity : AppCompatActivity() {
             }
         }
 
-        searchViewModel.listEvent.observe(this) {event ->
+        searchViewModel.listEvent.observe(this) { event ->
             setEventDataSearch(event)
         }
 
@@ -52,13 +55,15 @@ class SearchActivity : AppCompatActivity() {
             }
         }
 
-        searchViewModel.isLoading.observe(this) {isLoading ->
+        searchViewModel.isLoading.observe(this) { isLoading ->
             showLoading(isLoading)
         }
+
+
     }
 
     private fun setEventDataSearch(listEvent: List<ListEventsItem>) {
-        val adapter = EventUpcomingAdapter(onItemClick = { eventId -> navigateToDetail(eventId) })
+        val adapter = EventSearchAdapter(onItemClick = { eventId -> navigateToDetail(eventId) })
         adapter.submitList(listEvent)
         binding.rvEventSearch.adapter = adapter
     }

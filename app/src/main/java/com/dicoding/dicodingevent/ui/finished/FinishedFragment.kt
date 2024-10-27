@@ -8,16 +8,21 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
+import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.StaggeredGridLayoutManager
-import com.dicoding.dicodingevent.data.remote.response.ListEventsItem
+import com.dicoding.dicodingevent.data.local.entity.EventEntity
 import com.dicoding.dicodingevent.databinding.FragmentFinishedBinding
 import com.dicoding.dicodingevent.ui.adapter.EventFinishedAdapter
 import com.dicoding.dicodingevent.ui.detail.DetailActivity
+import kotlinx.coroutines.launch
 
 class FinishedFragment : Fragment() {
 
     private var _binding: FragmentFinishedBinding? = null
-    private val finishedViewModel by viewModels<FinishedViewModel>()
+    private val finishedViewModel by viewModels<FinishedViewModel>(){
+        FinishedModelFactory.getInstance(requireActivity())
+    }
 
     // This property is only valid between onCreateView and
     // onDestroyView.
@@ -31,6 +36,11 @@ class FinishedFragment : Fragment() {
 
         _binding = FragmentFinishedBinding.inflate(inflater, container, false)
         val root: View = binding.root
+
+        binding.rvEvent.apply {
+            layoutManager = GridLayoutManager(requireContext(), 2)
+            setHasFixedSize(true)
+        }
 
         finishedViewModel.listEvent.observe(viewLifecycleOwner) { eventList ->
             setEventData(eventList)
@@ -52,10 +62,24 @@ class FinishedFragment : Fragment() {
         return root
     }
 
-    private fun setEventData(listEvent: List<ListEventsItem>) {
-        val adapter = EventFinishedAdapter(onItemClick = { eventId -> navigateToDetail(eventId)})
+    private fun setEventData(listEvent: List<EventEntity>) {
+        val adapter = EventFinishedAdapter(
+            onItemClick = { eventId -> navigateToDetail(eventId)},
+            onFavoriteClick = { event ->
+                viewLifecycleOwner.lifecycleScope.launch {
+                    toggleFavorite(event)
+                }
+            })
         adapter.submitList(listEvent)
         binding.rvEvent.adapter = adapter
+    }
+
+    private suspend fun toggleFavorite(event: EventEntity) {
+        if (event.isFavorite) {
+            finishedViewModel.deleteEvent(event)
+        } else {
+            finishedViewModel.saveEvent(event)
+        }
     }
 
     private fun showLoading(isLoading: Boolean) {
