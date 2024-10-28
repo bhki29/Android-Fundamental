@@ -21,6 +21,8 @@ class EventUpcomingAdapter(private val onItemClick: (Int) -> Unit, private val o
                 .load(event.mediaCover)
                 .into(binding.imgEvent)
             binding.tvEvent.text = event.title
+            binding.tvCategory.text = event.category
+            binding.tvOwner.text = "Penyelenggara : ${event.owner}"
             itemView.setOnClickListener {
                 onItemClick(event.id)
             }
@@ -48,12 +50,12 @@ class EventUpcomingAdapter(private val onItemClick: (Int) -> Unit, private val o
         }
     }
 
-
     companion object {
         val DIFF_CALLBACK = object : DiffUtil.ItemCallback<EventEntity>() {
             override fun areItemsTheSame(oldItem: EventEntity, newItem: EventEntity): Boolean {
                 return oldItem == newItem
             }
+
             @SuppressLint("DiffUtilEquals")
             override fun areContentsTheSame(oldItem: EventEntity, newItem: EventEntity): Boolean {
                 return oldItem == newItem

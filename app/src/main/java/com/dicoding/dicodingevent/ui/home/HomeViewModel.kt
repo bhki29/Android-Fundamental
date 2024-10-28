@@ -16,8 +16,12 @@ class HomeViewModel(private val eventRepository: EventRepository) : ViewModel() 
     private val _listEventFinished = MutableLiveData<List<EventEntity>>()
     val listEventFinished: LiveData<List<EventEntity>> = _listEventFinished
 
-    private val _isLoading = MutableLiveData<Boolean>()
-    val isLoading: LiveData<Boolean> = _isLoading
+    private val _isLoadingUpcoming = MutableLiveData<Boolean>()
+    val isLoadingUpcoming: LiveData<Boolean> = _isLoadingUpcoming
+
+    private val _isLoadingFinished = MutableLiveData<Boolean>()
+    val isLoadingFinished: LiveData<Boolean> = _isLoadingFinished
+
 
     private val _errorMessage = MutableLiveData<EventWrapper<String>>()
     val errorMessage: LiveData<EventWrapper<String>> = _errorMessage
@@ -28,18 +32,18 @@ class HomeViewModel(private val eventRepository: EventRepository) : ViewModel() 
     }
 
     private fun fetchEventUpcoming() {
-        _isLoading.value = true
+        _isLoadingUpcoming.value = true
 
         eventRepository.fetchUpcomingEvents().observeForever { result ->
             when (result) {
-                is Result.Loading -> _isLoading.value = true
+                is Result.Loading -> _isLoadingUpcoming.value = true
                 is Result.Success -> {
-                    _isLoading.value = false
+                    _isLoadingUpcoming.value = false
                     _listEventUpcoming.value = result.data
                 }
 
                 is Result.Error -> {
-                    _isLoading.value = false
+                    _isLoadingUpcoming.value = false
                     _errorMessage.value = EventWrapper("Error: ${result.error}")
                 }
             }
@@ -49,18 +53,18 @@ class HomeViewModel(private val eventRepository: EventRepository) : ViewModel() 
 
 
     private fun fetchEventFinished() {
-        _isLoading.value = true
+        _isLoadingFinished.value = true
 
         eventRepository.fetchFinishedEvents().observeForever { result ->
             when (result) {
-                is Result.Loading -> _isLoading.value = true
+                is Result.Loading -> _isLoadingFinished.value = true
                 is Result.Success -> {
-                    _isLoading.value = false
+                    _isLoadingFinished.value = false
                     _listEventFinished.value = result.data
                 }
 
                 is Result.Error -> {
-                    _isLoading.value = false
+                    _isLoadingFinished.value = false
                     _errorMessage.value = EventWrapper("Error: ${result.error}")
                 }
             }

@@ -22,7 +22,7 @@ class EventSearchAdapter(private val onItemClick: (Int) -> Unit): ListAdapter<Li
                 .into(binding.imgEvent)
             binding.tvEvent.text = event.name
             binding.tvCategory.text = event.category
-            binding.tvOwner.text = "Oleh : ${event.ownerName}"
+            binding.tvOwner.text = "Penyelenggara : ${event.ownerName}"
             itemView.setOnClickListener {
                 onItemClick(event.id)
             }

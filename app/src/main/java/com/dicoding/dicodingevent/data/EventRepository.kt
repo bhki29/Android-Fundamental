@@ -15,6 +15,7 @@ import retrofit2.HttpException
 class EventRepository private constructor(
     private val apiService: ApiService,
     private val eventDao: EventDao,
+    @Suppress("unused")
     private val appExecutors: AppExecutors
 ) {
 
@@ -125,7 +126,7 @@ class EventRepository private constructor(
         }
     }
 
-    suspend fun getEventFavorite(): LiveData<List<EventEntity>> {
+    fun getEventFavorite(): LiveData<List<EventEntity>> {
         return eventDao.getEventsFavorite()
     }
 

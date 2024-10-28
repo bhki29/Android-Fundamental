@@ -10,7 +10,6 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.GridLayoutManager
-import androidx.recyclerview.widget.StaggeredGridLayoutManager
 import com.dicoding.dicodingevent.data.local.entity.EventEntity
 import com.dicoding.dicodingevent.databinding.FragmentFinishedBinding
 import com.dicoding.dicodingevent.ui.adapter.EventFinishedAdapter
@@ -20,9 +19,10 @@ import kotlinx.coroutines.launch
 class FinishedFragment : Fragment() {
 
     private var _binding: FragmentFinishedBinding? = null
-    private val finishedViewModel by viewModels<FinishedViewModel>(){
+    private val finishedViewModel by viewModels<FinishedViewModel>{
         FinishedModelFactory.getInstance(requireActivity())
     }
+
 
     // This property is only valid between onCreateView and
     // onDestroyView.
@@ -42,12 +42,8 @@ class FinishedFragment : Fragment() {
             setHasFixedSize(true)
         }
 
-        finishedViewModel.listEvent.observe(viewLifecycleOwner) { eventList ->
-            setEventData(eventList)
-        }
-
-        finishedViewModel.isLoading.observe(viewLifecycleOwner) { loading ->
-            showLoading(loading)
+        finishedViewModel.listEvent.observe(viewLifecycleOwner) {eventList ->
+            setEventDataFinished(eventList)
         }
 
         finishedViewModel.errorMessage.observe(viewLifecycleOwner) {
@@ -56,13 +52,15 @@ class FinishedFragment : Fragment() {
             }
         }
 
-        val layoutManager = StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL)
-        binding.rvEvent.layoutManager = layoutManager
+        finishedViewModel.isLoading.observe(viewLifecycleOwner) {loading ->
+            showLoading(loading)
+        }
 
         return root
+
     }
 
-    private fun setEventData(listEvent: List<EventEntity>) {
+    private fun setEventDataFinished(listEvent: List<EventEntity>) {
         val adapter = EventFinishedAdapter(
             onItemClick = { eventId -> navigateToDetail(eventId)},
             onFavoriteClick = { event ->
@@ -86,15 +84,15 @@ class FinishedFragment : Fragment() {
         binding.progressBar.visibility = if (isLoading) View.VISIBLE else View.GONE
     }
 
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
+    }
+
     private fun navigateToDetail(eventId: Int) {
         val intent = Intent(requireContext(), DetailActivity::class.java).apply {
             putExtra("EVENT_ID", eventId)
         }
         startActivity(intent)
-    }
-
-    override fun onDestroyView() {
-        super.onDestroyView()
-        _binding = null
     }
 }

@@ -34,10 +34,8 @@ class HomeFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
 
-
         _binding = FragmentHomeBinding.inflate(inflater, container, false)
         val root: View = binding.root
-
 
         binding.rvEventUpcoming.apply {
             layoutManager = LinearLayoutManager(requireActivity(), LinearLayoutManager.HORIZONTAL, false)
@@ -64,9 +62,14 @@ class HomeFragment : Fragment() {
             }
         }
 
-        homeViewModel.isLoading.observe(viewLifecycleOwner) { isLoading ->
-            showLoading(isLoading)
+        homeViewModel.isLoadingUpcoming.observe(viewLifecycleOwner) { isLoadingUpcoming ->
+            showLoadingUpcoming(isLoadingUpcoming)
         }
+
+        homeViewModel.isLoadingFinished.observe(viewLifecycleOwner) { isLoadingFinished ->
+            showLoadingFinished(isLoadingFinished)
+        }
+
 
         return root
     }
@@ -95,8 +98,12 @@ class HomeFragment : Fragment() {
         binding.rvEventFinished.adapter = adapter
     }
 
-    private fun showLoading(isLoading: Boolean) {
-        binding.progressBar.visibility = if (isLoading) View.VISIBLE else View.GONE
+    private fun showLoadingUpcoming(isLoading: Boolean) {
+        binding.progressBarUpcoming.visibility = if (isLoading) View.VISIBLE else View.GONE
+    }
+
+    private fun showLoadingFinished(isLoading: Boolean) {
+        binding.progressBarFinished.visibility = if (isLoading) View.VISIBLE else View.GONE
     }
 
     private suspend fun toggleFavorite(event: EventEntity) {
