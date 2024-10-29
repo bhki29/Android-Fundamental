@@ -47,7 +47,7 @@
             android:layout_height="wrap_content"
             android:layout_margin="8dp"
             android:layout_marginBottom="10dp"
-            app:cardBackgroundColor="@color/grey"
+            app:cardBackgroundColor="@color/md_theme_primary_night"
             app:cardCornerRadius="8dp"
             app:cardElevation="8dp"
             app:layout_constraintStart_toStartOf="parent"
@@ -59,7 +59,7 @@
                 android:layout_height="wrap_content"
                 android:padding="8dp"
                 android:textSize="12sp"
-                android:textColor="@color/white"
+                android:textColor="@color/black"
                 android:gravity="center_vertical"
                 tools:text="@string/category_event"/>
 
